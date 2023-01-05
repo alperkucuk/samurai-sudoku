@@ -1,0 +1,495 @@
+import java.io.File;
+import java.io.FileReader;
+import java.util.ArrayList;
+import java.util.Random;
+
+public class Main implements Runnable {
+
+	// Thread bilgilerini yazdırma
+	static synchronized void threadBilgiYazdir(int satir,int sutun,int deger){
+		System.out.println("[Rastgele Satır]:"+satir+" "+"[Rastgele Sütun]:"+sutun+" "+"[Rastgele Değer]:"+deger+" "+Thread.currentThread().getName());
+
+		}
+	
+	// Süre bilgisini yazdırma
+	static synchronized void sureYazdir(long baslangic,long bitis){
+    	if(sureKontrol==1){
+    		sureKontrol=0;
+    		
+    	System.out.print("Geçen süre: "+(bitis-baslangic)+"\n");
+    	}
+    }
+	
+	// Sudokuyu yazdırma
+    static synchronized void sudokuYazdir(int[][] sudokuYaz) {
+    	int i, j;
+    	
+    	if(r==1){
+    		r=0;
+
+        for (i = 0; i < 9; i++) {
+            if( i%3 == 0)
+                System.out.println("=========================");
+            
+            for (j = 0; j < 9; j++) {
+                if (j%3 == 0) System.out.print("| ");
+                if(sudokuYaz[i][j] == 0)
+                	System.out.print("* ");
+                else
+                	System.out.print(Integer.toString(sudokuYaz[i][j])+ " ");
+            }
+            System.out.println("|");
+        }
+        System.out.println("=========================");
+	
+	System.out.println("Çözüme başlanan thread: "+Thread.currentThread().getName());
+    	}
+    }
+    
+    // Sudokuyu çözdürme
+    static boolean sudokuCoz(int satir, int sutun, int[][] sudoku,int zaman, int baslat) {
+		
+		if(zaman == 81) return true;
+		int f=1;
+		for(int p=0;p<=8;p++){
+			for(int q=0;q<=8;q++){
+				if(sudoku[p][q]==0){ f=0;}	
+			}
+		}
+		if(f==1)return true;
+
+
+		
+        if (++sutun == 9){
+        	sutun = 0;
+        	if(++satir == 9)
+        		satir = 0;
+        }
+       
+		
+        if (sudoku[satir][sutun] != 0){
+       		return sudokuCoz(satir, sutun, sudoku, zaman+1, baslat);
+        }
+
+        for (int val = 1; val <= 9; ++val) {
+        	if(++baslat == 10) baslat = 1;
+        	
+            if (onayla(satir,sutun,baslat,sudoku)) {
+                sudoku[satir][sutun] = baslat;   
+        		if(sudokuCoz(satir, sutun, sudoku, zaman+1, baslat))
+        			return true;
+            }
+        }
+        
+        sudoku[satir][sutun] = 0;
+        return false;
+    }
+
+    // Sudoku çözüm kontrolü
+    static boolean onayla(int satir, int sutun, int deger, int[][] sudoku) {
+    	
+    	int i;
+    	
+    	for(i = 0; i < 9; i++){
+    		
+     		if(sudoku[satir][i] == deger)
+     			return false;
+     		
+     		if(sudoku[i][sutun] == deger)
+     			return false;
+     		
+     		if (sudoku[satir/3*3+i%3][sutun/3*3+i/3] == deger)
+     			return false;
+    	}
+        return true;
+    }
+    
+    static boolean kontrol;
+	static int r=1;
+	static int sureKontrol=1;
+	static int t=0;
+	
+	// Txt'den sudokuyu okuma
+    static int[][] sudokuyuGetir(int secim) {
+		
+		ArrayList<Character> karakterDizi = new ArrayList<>();
+		File file = new File("C:\\Users\\ELİF\\eclipse-workspace\\FileReaderTest\\a.txt");
+        try {
+            FileReader fileReader = new FileReader(file);
+            int a = fileReader.read();
+            char c ;
+            while(a != -1){
+                c = (char)a;
+                if (c != '\n'){
+                    if (c == '*')
+                        karakterDizi.add('0');
+                    if (c != '*')
+                        karakterDizi.add(c);
+                }
+                a = fileReader.read();
+            }
+        } catch (Exception e) {
+            System.out.println(e);
+        }
+
+//      System.out.println(karakterDizi.size());
+		
+//		File txtDosya = new File("dosya.txt");
+//		
+//		ArrayList<Character> karakterDizi = new ArrayList<Character>();
+//		
+//		try {
+//			if(!txtDosya.exists()) {
+//				txtDosya.createNewFile();
+//			}
+//			else {
+//				System.out.println("Txt dosyası mevcut.\n");
+//				
+//				FileReader fileReader = new FileReader(txtDosya);
+//				// int fr = fileReader.read();
+//				char ch;
+//				int i= fileReader.read();
+//
+//				while(i != -1) {
+//					ch = (char)i;
+//					
+//					if(ch != '\n') {
+//						
+//						if(ch == '*') {
+//							
+//							karakterDizi.add('0');
+//						}
+//						if(ch != '*') {
+//						
+//							karakterDizi.add(ch);
+//						}
+//						System.out.println(ch);
+//						
+//						
+//					}
+//					
+//					
+//					//System.out.println((char)fr);
+//					i = fileReader.read();
+//				}
+//			}
+//		} catch (Exception e) {
+//			
+//		}
+		
+//      System.out.println("");
+//		System.out.println("Size: " + karakterDizi.size());
+//		for(int j=0; j<karakterDizi.size();j++) {
+//		System.out.println(karakterDizi.get(j));
+//		}
+		
+		char[] chars = new char[karakterDizi.size()];
+//		System.out.println("Char Array Length: " + chars.length);
+		
+		int[] num = new int[81];
+//		System.out.println("Num Array: " + num.length);
+		
+		for(int o=0; o<chars.length; o++) {
+			
+			String st = Character.toString(karakterDizi.get(o));
+			num[o] = Integer.parseInt(st);
+//			System.out.println("Sayilar = " + num[o]);
+			
+//			karakterDizi[o] = karakterList.get(o);
+//			num[o] = (int)Character.getNumericValue(karakterDizi[0]);
+//			System.out.println("Karakter Dizisi:	" + karakterDizi[0] + "	Karakter Listesi:	" + karakterList.get(o) + "	O dönüş değeri:	" + o);
+//			System.out.println("Sayılar: " + num[o]);
+
+		}
+// 			System.out.println("Test bitti.");
+		
+
+		/*
+		String s = new String(chars);
+		String[] tok = s.split("");
+		ArrayList<Integer> res = new ArrayList<Integer>();
+		for (String t : tok) {
+		    res.add(Integer.parseInt(t));
+		}
+		*/
+		int[][] yeniSudoku = new int[9][9];
+		int x,y;
+		
+		int[][] Format = {
+                {0, 0, 0, 0, 0, 0, 0, 0, 0},
+                {0, 0, 0, 0, 0, 0, 0, 0, 0},
+                {0, 0, 0, 0, 0, 0, 0, 0, 0},
+                {0, 0, 0, 0, 0, 0, 0, 0, 0},
+                {0, 0, 0, 0, 0, 0, 0, 0, 0},
+                {0, 0, 0, 0, 0, 0, 0, 0, 0},
+                {0, 0, 0, 9, 0, 0, 0, 0, 0},
+                {0, 0, 0, 0, 0, 0, 0, 0, 0},
+                {0, 0, 0, 0, 0, 0, 6, 0, 0},
+        };
+        
+		int it=0;
+		for(x = 0; x < 9; x++) {
+        	for(y= 0; y < 9; y++) {
+        		Format[x][y] = num[it];
+        		it++;
+//				System.out.print(Format[x][y] + " ");
+        	}
+//        	System.out.println("");
+        }	
+//		System.out.println("\n\n");
+        for(x = 0; x < 9; x++) {
+        	for(y= 0; y < 9; y++) {
+        		yeniSudoku[x][y] = Format[x][y];
+//				System.out.print(Format[x][y] + " ");
+        	}
+//        	System.out.println("");
+        }	
+		
+//		char[] karakterDizi = new char[karakterList.size()];
+//		for(int k=0; k<karakterList.size(); k++) {
+//			char temp;
+//			temp = karakterList.get(k);
+//			karakterDizi[k] = temp;
+//		}
+//		String abc = new String(karakterDizi);
+//		String[] p = abc.split(" "); 
+//		ArrayList<Integer> sayiDizi = new ArrayList<Integer>();
+//		for(String n : p) {
+//			sayiDizi.add(Integer.parseInt(s));	
+//	 	}
+        
+//		StringBuilder stringBuilder = new StringBuilder();
+//		ArrayList<Integer> sayiDizi = new ArrayList<Integer>();
+//
+//		for (char s : karakterDizi) {
+//		  if (s != ' ') {
+//		     stringBuilder.append(s);
+//		  } else {
+//		     sayiDizi.add(Integer.parseInt(stringBuilder.toString()));
+//		     stringBuilder = new StringBuilder();
+//		  }
+//		}
+//		for(int i=0; i<sayiDizi.size(); i++) {
+//			
+//			System.out.print(sayiDizi.get(i)+" ");
+//		}
+		
+//		  StringBuilder stringBuilder = new StringBuilder();
+//		  ArrayList<Integer> sayiDizi = new ArrayList<Integer>();
+//		  for (Character s : karakterDizi) {
+//		    if (sayiDizi.equals(' ')) {
+//		      sayiDizi.add(Integer.parseInt(stringBuilder.toString()));
+//		      stringBuilder = new StringBuilder();
+//		    } else {
+//		      stringBuilder.append(String.valueOf(s));
+//		    }
+//		  }
+//		  sayiDizi.add(Integer.parseInt(stringBuilder.toString()));
+	
+//		try {
+//			if(!txtSudoku.exists()) {
+//				txtSudoku.createNewFile();
+//			}
+//			else {
+//				System.out.println("Txt dosyası sistemde mevcuttur.");
+//				
+//				FileReader fileReader = new FileReader(txtSudoku);
+//				String str;
+//				ArrayList <String> dize = new ArrayList<String>();
+//				ArrayList <String> dize2 = new ArrayList<String>();
+//				BufferedReader br = new BufferedReader(fileReader);
+//
+//				while((str = br.readLine()) != null ) {
+//					dize.add(str);
+//					System.out.println(str);
+//				}
+//				System.out.println("");
+//				
+//				for(int i=0; i<dize.size(); i++) {
+//					
+//					if(dize.get(i) != "*") {
+//						dize2.add(i,dize.get(i));
+//					}
+//					else {
+//						dize2.add(i,"0");
+//					}
+//				}
+//				for(int i=0; i<dize.size(); i++) {
+//					
+//					if(dize.get(i) == "*") {
+//
+//						// dize.remove(i);
+//						// dize.add(i, "0");
+//						dize.set(i, "0");
+//					}			
+//					System.out.println(dize.get(i));
+//				}
+//			}
+//		} catch (Exception exep) {
+//			
+//			System.out.println(exep.getMessage());
+//		}
+        return yeniSudoku;
+
+    }
+	
+	public void run() {
+		int[][] Sudoku = sudokuyuGetir(1);					
+		int i, j, deger;								
+		long basla, bit;
+		Random rnd = new Random(System.currentTimeMillis());
+			i = rnd.nextInt(9);
+			j = rnd.nextInt(9);
+			deger = rnd.nextInt(9)+1;
+			threadBilgiYazdir(i,j,deger);
+
+			basla = System.currentTimeMillis();
+	
+			if (sudokuCoz(i, j, Sudoku, 0, deger)){
+			
+				sudokuYazdir(Sudoku);
+				bit = System.currentTimeMillis();
+				sureYazdir(basla,bit);
+				if(!kontrol){
+				kontrol = true;
+				}
+				Thread.currentThread().interrupt();
+			}
+			else
+				System.out.println("Sudoku çözülemiyor!");
+	}
+
+	public static void main(String[] args) {
+		
+//			System.out.println("1 Thread kullanıldı.");
+//		
+//			kontrol = false;
+//			Main coz = new Main();
+//			Thread thread1 = new Thread(coz);
+//		
+//			thread1.start();
+//			
+//			while(!kontrol);
+//			
+//			try
+//        		{
+//				thread1.interrupt();
+//        		}
+//        		catch(Exception exep)
+//        		{
+//            			System.out.println("Hata:	" + exep);
+//        		}
+		
+		
+//			System.out.println("2 Thread Kullanıldı.");		
+//		
+//			kontrol = false;
+//			Main coz = new Main();
+//			Thread thread1=new Thread(coz);
+//			Thread thread2=new Thread(coz);
+//			
+//			thread1.start();
+//			thread2.start();
+//			
+//			while(!kontrol);
+//			
+//			 try{
+//				thread1.interrupt();
+//				thread2.interrupt();
+//			 	}
+//        		catch(Exception exep)
+//        		{
+//            			System.out.println("Hata:	" + exep);
+//        		}
+	
+		
+//			System.out.println("3 Thread kullanıldı.");
+//
+//			kontrol = false;
+//			Main coz = new Main();
+//			Thread thread1=new Thread(coz);
+//			Thread thread2=new Thread(coz);
+//			Thread thread3=new Thread(coz);
+//			
+//			thread1.start();
+//			thread2.start();
+//			thread3.start();
+//
+//			while(!kontrol);
+//			
+//			try
+//        		{
+//				thread1.interrupt();
+//				thread2.interrupt();
+//				thread3.interrupt();
+//        		}
+//        		catch(Exception exep)
+//        		{
+//        			System.out.println("Hata:	" + exep);
+//        		}
+			
+
+//			System.out.println("4 Thread kullanıldı.");		
+//		
+//			kontrol = false;
+//			Main coz = new Main();
+//			Thread thread1=new Thread(coz);
+//			Thread thread2=new Thread(coz);
+//			Thread thread3=new Thread(coz);
+//			Thread thread4=new Thread(coz);
+//			
+//			thread1.start();
+//			thread2.start();
+//			thread3.start();
+//			thread4.start();
+//		
+//			while(!kontrol);
+//			
+//			try
+//        		{
+//				thread1.interrupt();
+//				thread2.interrupt();
+//				thread3.interrupt();
+//				thread4.interrupt();
+//        		}
+//        		catch(Exception exep)
+//        		{
+//        			System.out.println("Hata:	" + exep);
+//        		}
+
+			
+         	System.out.println("Beş thread kullanıldı. ");		
+	
+			kontrol = false;
+			Main coz=new Main();
+			Thread thread1=new Thread(coz);
+			Thread thread2=new Thread(coz);
+			Thread thread3=new Thread(coz);
+			Thread thread4=new Thread(coz);
+			Thread thread5=new Thread(coz);
+		
+			thread1.start();
+			thread2.start();
+			thread3.start();
+			thread4.start();
+			thread5.start();
+			
+			while(!kontrol);
+			
+			try
+        		{
+				thread1.interrupt();
+				thread2.interrupt();
+				thread3.interrupt();
+				thread4.interrupt();
+				thread5.interrupt();
+        		}
+        		catch(Exception exep)
+        		{
+            			System.out.println("Hata:	" + exep);
+        		}
+	
+	}
+}
+
+
